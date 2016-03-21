@@ -26,8 +26,7 @@ public class Tokenizer
     public final String sequence;
     
     public Token(int token, String sequence)
-    {
-      super();
+    {      
       this.token = token;
       this.sequence = sequence;
     }
@@ -63,6 +62,8 @@ public class Tokenizer
           match = true;
           String tok = m.group().trim();
           s = m.replaceFirst("").trim();
+          if(info.token==-1)
+        	  tok="COMMENT";
           tokens.add(new Token(info.token, tok));
           break;
         }
