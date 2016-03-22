@@ -47,6 +47,11 @@ public class Tokenizer
     tokenInfos.add(new TokenInfo(Pattern.compile("^("+regex+")"), token));
   }
   
+  public void addTk(String info,int code)
+  {
+	  tokens.add(new Token(code, info));
+  }
+  
   public void tokenize(String str) throws ParseException
   {
     String s = str.trim();

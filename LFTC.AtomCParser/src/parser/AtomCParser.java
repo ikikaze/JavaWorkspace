@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.LinkedList;
+
+import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 
 import tokens.*;
@@ -72,7 +74,7 @@ public final class AtomCParser {
 		tokenizer.add("<=",37);
 		tokenizer.add(">=",38);
 		//ID - 0
-				tokenizer.add("[a-zA-Z_][a-zA-Z0-9_]*", 0);
+		//		tokenizer.add("[a-zA-Z_][a-zA-Z0-9_]*", 0);
 
 		
 		
