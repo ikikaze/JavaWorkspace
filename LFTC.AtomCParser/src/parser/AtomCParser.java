@@ -84,29 +84,7 @@ public final class AtomCParser {
 		
 	}
 	
-	//returns all tokens in a file - pass file as string to this
-	public static LinkedList<Token> Tokenize(String str)
-	{	if(str.endsWith(".c"))
-			{
-				File file=new File(str);
-			try
-				{
-					str=FileUtils.readFileToString(file);
-				} catch (IOException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}	
 	
-			try {
-				x.tokenize(str);
-				} 	catch (ParseException e) {
-				e.printStackTrace();	
-				}
-			
 	
-		return x.getTokens();
-	}
 	
 }
