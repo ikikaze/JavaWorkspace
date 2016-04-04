@@ -13,11 +13,18 @@ import tokens.Tokenizer.Token;
 
 public class StateMachine {
 	public static Tokenizer x = new Tokenizer();
+	private String InputFile;
+	public StateMachine(String FileName)
+	{
+		x=new Tokenizer();
+		InputFile=FileName;
+	}
 
-	public static LinkedList<Token> statemachine(String str) {
+	public LinkedList<Token> Tokenize() {
 		int state = 0;
+		String str="";
 		String tokenstring = "";
-		File file = new File(str);
+		File file = new File(InputFile);
 		try {
 			str = FileUtils.readFileToString(file);
 		} catch (IOException e) {

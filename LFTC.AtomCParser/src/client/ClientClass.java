@@ -9,8 +9,8 @@ public class ClientClass {
 
 	public static void main(String args[])
 	{
-		
-		LinkedList<Token> x=StateMachine.statemachine("test.c");
+		StateMachine Lexer = new StateMachine("test.c");
+		LinkedList<Token> x=Lexer.Tokenize();
 		for(Token y :x)
 			System.out.println(y.token + " " + y.sequence);
 		
