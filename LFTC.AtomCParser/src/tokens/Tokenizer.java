@@ -1,13 +1,14 @@
 package tokens;
 
-import java.text.ParseException;
 import java.util.LinkedList;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
+	@SuppressWarnings("all")
 	private class TokenInfo {
+		
 		public final Pattern regex;
+		
 		public final int token;
 
 		public TokenInfo(Pattern regex, int token) {

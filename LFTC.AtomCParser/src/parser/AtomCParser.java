@@ -1,19 +1,8 @@
 package parser;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.LinkedList;
-
-import org.apache.commons.io.FileSystemUtils;
-import org.apache.commons.io.FileUtils;
-
 import tokens.*;
-import tokens.Tokenizer.Token;
 
 public final class AtomCParser {
-	
-	private static Tokenizer x;
 	
 	private AtomCParser()
 	{}
@@ -21,7 +10,6 @@ public final class AtomCParser {
 	//Initializes parser with the regexes used for matching
 	public static void Initialize(Tokenizer x)
 	{
-		AtomCParser.x=x; //user defined tokenizer		
 	}
 	
 	//non-parameter method defaults to AtomC
@@ -75,10 +63,6 @@ public final class AtomCParser {
 		tokenizer.add(">=",38);
 		//ID - 0
 		//		tokenizer.add("[a-zA-Z_][a-zA-Z0-9_]*", 0);
-
-		
-		
-		AtomCParser.x=tokenizer;
 		
 		
 		

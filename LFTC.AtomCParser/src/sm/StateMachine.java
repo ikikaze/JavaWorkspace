@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
-import javax.tools.JavaCompiler;
-
 import org.apache.commons.io.FileUtils;
 
 import tokens.ParserException;
@@ -27,6 +25,7 @@ public class StateMachine {
 			e.printStackTrace();
 		}
 		str = str + "\n !";
+		str=str.trim();
 		while (str != "!") {
 			String tmp = "";
 
@@ -70,7 +69,7 @@ public class StateMachine {
 					state = 32;
 					tokenstring = tokenstring.concat(tmp);
 					str = str.substring(1);
-				} else if (Pattern.matches("[\\\\+\\\\-\\\\*\\\\/\\\\.]", tmp)) {
+				} else if (Pattern.matches("[\\\\+-\\\\*\\\\/\\\\.]", tmp)) {
 					state = 33;
 					tokenstring = tokenstring.concat(tmp);
 					str = str.substring(1);
@@ -380,9 +379,11 @@ public class StateMachine {
 					str = str.substring(1);
 				} else
 					state = 33;
+				break;
 			case 90: // Invalid char state or file end state
 				if (str.equals("!")) {
 					str = "!";
+					x.addTk("END", 100);
 				} else
 					throw new ParserException("Error at " + str);
 				break;

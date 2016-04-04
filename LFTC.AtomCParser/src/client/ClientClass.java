@@ -2,7 +2,6 @@ package client;
 
 import java.util.LinkedList;
 
-import parser.AtomCParser;
 import sm.StateMachine;
 import tokens.Tokenizer.Token;
 
