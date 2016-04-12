@@ -1,7 +1,10 @@
 package sm;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 
+import symbols.Symbol;
 import tokens.ParserException;
 import tokens.Tokenizer.Token;
 
@@ -9,6 +12,7 @@ public class Asin {
 	private StateMachine x;
 	private LinkedList<Token> Tokens;
 	public int index;
+	private ArrayList<Symbol> Symbols;
 
 	public Asin(String fileName) {
 		x = new StateMachine(fileName);
@@ -20,11 +24,28 @@ public class Asin {
 				Tokens.remove(i);
 				i--;
 			}
+			Symbols = new ArrayList<Symbol>();
+			
 		}
 	}
+	
+	
+	private Symbol findSymbol(String name)
+	{
+		Collections.reverse(Symbols);
+		for(Symbol s : Symbols)
+			if(s.getName()==name) {
+				Collections.reverse(Symbols);
+				return s;}
+		return null;
+	}
+	
+	
+	
 
 	private boolean consume(int code) {
-		if (Tokens.get(index).token == code) {
+		int a;
+		if ((a = Tokens.get(index).token) == code) {
 			index++;
 			return true;
 		}
@@ -196,23 +217,19 @@ public class Asin {
 	public boolean consumeAll() {
 		int startindex = 0;
 		int ok1 = 0;
-		while (Tokens.get(index).token != 100 && index < Tokens.size()) {
+		while (index < Tokens.size() && Tokens.get(index).token != 100) {
 			startindex = index;
 			ok1 = 0;
-			if (consumePrimary()) {
-				ok1 = 1;
-				System.out.println("primary consumed");
-			} 
-			else if (consumeAdd()) {
-				//System.out.println("primary consumed");
+
+			if (consumeUnary()) {
+				System.out.println("Unitconsumed");
 				ok1 = 1;
 			}
-			if (Tokens.get(index).token != 100)
 
-				if (ok1 == 0)
-					return false;// throw new ParserException("BAD
-									// character : " +
-									// Tokens.get(0).sequence);
+			if (ok1 == 0)
+				return false;// throw new ParserException("BAD
+								// character : " +
+								// Tokens.get(0).sequence);
 		}
 		return true;
 	}
@@ -221,8 +238,7 @@ public class Asin {
 	// add = mul add' ;--SI add' = (ADD|SUB) exprmul expradd' | Eps
 	private boolean consumeAdd() {
 		if (consumeMul()) {
-			if (consumeAdd1()) {
-				System.out.println("Add consumed");
+			if (consumeAdd1()) {				
 				return true;
 			}
 
@@ -300,19 +316,23 @@ public class Asin {
 	private boolean consumeUnary() {
 		int startindex = index;
 		int ok = 0;
-		if (consume(25))
+		if (consume(25)) //SUB
 			ok = 1;
 		else {
 			index = startindex;
-			if (consume(31))
+			if (consume(31)) //NOT
 				ok = 1;
 		}
 		if (ok == 1) {
 			if (consumeUnary())
+			{System.out.println("UNARY Consumed");
 				return true;
+			}
 		}
-		if (consumePostFix())
+		if (consumePostFix())  //NO SUB OR NOT WAS CONSUMED
+		{System.out.println("UNARY Consumed");
 			return true;
+		}
 
 		return false;
 	}
@@ -384,7 +404,7 @@ public class Asin {
 			return true;
 		if (consume(9)) // struct
 			if (consume(0)) // id
-				return false;
+				return true;
 
 		return false;
 	}
@@ -394,7 +414,7 @@ public class Asin {
 		int startindex = index;
 		if (consumeTBase())
 			if (consume(0)) {
-				consumeArrayDecl();
+				consumeArrayDecl();				
 				return true;
 			}
 		index = startindex;
@@ -450,11 +470,9 @@ public class Asin {
 				if (consumeexpr())
 					if (consume(19))
 						if (consumeStm()) {
-							int ok = 0;
 							if (consume(4))
-								ok = 1;
-							if (ok == 1)
-								consumeStm();
+								if (consumeStm()) {
+								}
 							return true;
 						}
 		index = startindex;
@@ -473,7 +491,7 @@ public class Asin {
 					consumeexpr();
 					if (consume(17)) {
 						consumeexpr();
-						if (consume(18))
+						if (consume(19))
 							if (consumeStm())
 								return true;
 					}
@@ -504,9 +522,9 @@ public class Asin {
 		int startindex = index;
 		if (consume(22)) {
 			while (true) {
-				if (!consumeVar())
-					break;
-				if (!consumeStm())
+				if (consumeVar()) {
+				} else if (consumeStm()) {
+				} else
 					break;
 			}
 			if (consume(23))
@@ -552,13 +570,15 @@ public class Asin {
 
 	private boolean consumeUnit() {
 		while (true) {
-			if (!consumeStruct())
-				break;
-			if (!consumeFunc())
-				break;
-			if (!consumeVar())
-				break;
+			if (consumeStruct()) {
+			} else if (consumeFunc()) {
+			} else if (consumeVar()) {
+			} else if (consume(100)) {
+				System.out.println("END");
+				return true;
+			} else
+				return false;
 		}
-		return true;
+
 	}
 }
