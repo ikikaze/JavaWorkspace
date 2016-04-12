@@ -199,11 +199,12 @@ public class Asin {
 		while (Tokens.get(index).token != 100 && index < Tokens.size()) {
 			startindex = index;
 			ok1 = 0;
-			if (consumeAdd()) {
+			if (consumePrimary()) {
 				ok1 = 1;
-				// index = startindex;
-			} else if (consumePrimary()) {
 				System.out.println("primary consumed");
+			} 
+			else if (consumeAdd()) {
+				//System.out.println("primary consumed");
 				ok1 = 1;
 			}
 			if (Tokens.get(index).token != 100)
