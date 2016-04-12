@@ -1,6 +1,4 @@
-ab+bc
-abc
-c-d
-'a'
-"ASDSBSD"
-f(a)
+1+2+3+4/2+5
+1+3
+//asdf
+f(34)
