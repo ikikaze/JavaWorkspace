@@ -10,10 +10,20 @@ public class Type {
 	
 	public Type(TypeBase type,int nElem,Symbol s)
 	{
-		this.type=type;
+		this.setType(type);
 		this.nElements=nElem;
 		this.s=s;
 	}
+
+	public TypeBase getType()
+		{
+				return type;
+		}
+
+	public void setType(TypeBase type)
+		{
+				this.type = type;
+		}
 	
 	
 

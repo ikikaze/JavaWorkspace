@@ -13,9 +13,9 @@ public class Symbol {
 	public Symbol(String Name,CLS cls,MEM mem,Type type,int depth)
 	{
 		this.setName(Name);
-		this.cls=cls;
+		this.setCls(cls);
 		this.mem=mem;
-		this.type=type;
+		this.setType(type);
 		this.depth=depth;
 	}
 
@@ -26,6 +26,26 @@ public class Symbol {
 	public void setName(String name) {
 		Name = name;
 	}
+
+	public CLS getCls()
+		{
+				return cls;
+		}
+
+	public void setCls(CLS cls)
+		{
+				this.cls = cls;
+		}
+
+	public Type getType()
+		{
+				return type;
+		}
+
+	public void setType(Type type)
+		{
+				this.type = type;
+		}
 	
 }
 
