@@ -6,9 +6,9 @@ import java.util.regex.Pattern;
 public class Tokenizer {
 	@SuppressWarnings("all")
 	private class TokenInfo {
-		
+
 		public final Pattern regex;
-		
+
 		public final int token;
 
 		public TokenInfo(Pattern regex, int token) {
