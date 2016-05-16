@@ -1,15 +1,16 @@
 package symbols;
 
+import java.util.ArrayList;
+
 import enums.TypeBase;
 
-@SuppressWarnings("unused")
 public class Type {
 
 	private TypeBase type;
 	private int nElements;
-	private Symbol s;
+	private ArrayList<Symbol> s;
 
-	public Type(TypeBase type, int nElem, Symbol s) {
+	public Type(TypeBase type, int nElem, ArrayList<Symbol> s) {
 		this.setType(type);
 		this.nElements = nElem;
 		this.s = s;

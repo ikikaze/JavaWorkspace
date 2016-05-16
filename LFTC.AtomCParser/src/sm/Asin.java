@@ -3,11 +3,15 @@ package sm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
 import enums.CLS;
+import enums.MEM;
 import enums.TypeBase;
+import symbols.StructSymbol;
 import symbols.Symbol;
+import symbols.Type;
 import tokens.ParserException;
 import tokens.Tokenizer.Token;
 
@@ -19,6 +23,9 @@ public class Asin {
 	public int index;
 	public ArrayList<Symbol> Symbols;
 	private int depth = 0;
+	private Symbol crtFunc = null;
+	private Symbol crtStruct = null;
+	private List<Symbol> crtArgs = new ArrayList<Symbol>();
 
 	public Asin(String fileName) {
 		x = new StateMachine(fileName);
@@ -57,8 +64,8 @@ public class Asin {
 
 		else
 			return;
-		ListIterator<Symbol> it = Symbols.listIterator(index);		
-		if (it.hasNext()) {			
+		ListIterator<Symbol> it = Symbols.listIterator(index);
+		if (it.hasNext()) {
 			it.next();
 			while (it.hasNext()) {
 				it.next();
@@ -246,7 +253,7 @@ public class Asin {
 			startindex = index;
 			ok1 = 0;
 
-			if (consumeUnary()) {
+			if (consumeUnit()) {
 				System.out.println("Unitconsumed");
 				ok1 = 1;
 			}
@@ -408,15 +415,15 @@ public class Asin {
 	}
 
 	// arrayDecl: LBRACKET expr? RBRACKET ;
-	private boolean consumeArrayDecl() {
+	private int consumeArrayDecl() {
 		int startindex = index;
 		if (consume(20)) {
 			consumeexpr();
 			if (consume(21))
-				return true;
+				return 1;
 		}
 		index = startindex;
-		return false;
+		return -20; // TODO add the array implementation
 
 	}
 
@@ -449,9 +456,11 @@ public class Asin {
 	}
 
 	private Symbol consumeVar() {
-		Symbol symbol = null;
+		Symbol symbol = new Symbol();
 		TypeBase base;
+
 		String name;
+		int nElem = -1;
 		int startindex = index;
 		if ((base = consumeTBase()) != null) {
 			if (consume(0)) {
@@ -462,10 +471,18 @@ public class Asin {
 						break;
 					if (!consume(0))
 						break;
+					else {// TODO 2nd variable with comma separator
+					}
+
 					consumeArrayDecl();
 				}
-				if (consume(17))
+				if (consume(17)) {
+					symbol.addInfo(name);
+					Type type = new Type(base, nElem, null);
+					symbol.addInfo(type);
+					symbol.addInfo(CLS.CLS_VAR);
 					return symbol;// TODO
+				}
 			}
 		}
 
@@ -477,28 +494,41 @@ public class Asin {
 		int startindex = index;
 		if (consume(9))
 			if (consume(0)) {
-				if (findSymbol(Tokens.get(startindex + 1).sequence) == null)
+				if (findSymbol(Tokens.get(startindex + 1).sequence) != null)
 					throw new ParserException("Symbol Redefinition");
 				else {
 					String strname = Tokens.get(startindex + 1).sequence;
+					StructSymbol s = new StructSymbol(strname, CLS.CLS_STRUCT, MEM.MEM_GLOBAL, null);
+					ArrayList<Symbol> args = new ArrayList<Symbol>();
 
+					crtStruct = s;
 					if (consume(22)) {
 						while (true) {
 							int varindex = index;
-							if (consumeVar() == null)
+							Symbol x = consumeVar();
+							if (x == null)
 								break;
 							else {
+								s.AddMember(x);
+
 							}
 
 						}
 						if (consume(23))
-							if (consume(17))
+							if (consume(17)) {
+								Type type = new Type(TypeBase.TB_STRUCT, -1, args);
+								s.addInfo(type);
+
+								AddSymbol(s);
+								crtStruct = null;
 								return true;
+							}
 
 					}
 				}
 			}
 		index = startindex;
+		crtStruct = null;
 		return false;
 	}
 

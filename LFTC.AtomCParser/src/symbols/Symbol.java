@@ -1,11 +1,12 @@
 package symbols;
 
 import enums.*;
-
+@SuppressWarnings("unused")
 public class Symbol {
 
 	private String Name;
 	private CLS cls;
+	
 	private MEM mem;
 	private Type type;
 	private int depth;
@@ -59,5 +60,6 @@ public class Symbol {
 	public void addInfo(Type type) {
 		this.type = type;
 	}
+	
 
 }

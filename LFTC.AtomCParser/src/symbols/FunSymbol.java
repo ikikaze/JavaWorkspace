@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import enums.CLS;
 import enums.MEM;
-
 public class FunSymbol extends Symbol {
 
 	private ArrayList<Symbol> args;
@@ -12,6 +11,11 @@ public class FunSymbol extends Symbol {
 	public FunSymbol(String Name, CLS cls, MEM mem, Type type, int depth, ArrayList<Symbol> args) {
 		super(Name, cls, mem, type, depth);
 		this.args = args;
+	}
+	
+	public void addArg(Symbol arg)
+	{
+		this.args.add(arg);
 	}
 
 }
