@@ -12,22 +12,28 @@ public class StructSymbol extends Symbol {
 
 	public StructSymbol(String Name, CLS cls, MEM mem, Type type) {
 		super(Name, cls, mem, type, 0);
-		members=new ArrayList<Symbol>();
+		members = new ArrayList<Symbol>();
 
 	}
 
-	public void AddMember(Symbol x) {
+	public Symbol AddMember(Symbol x) {
 		members.add(x);
+		return x;
 	}
-	
-	public void AddFields(List<Symbol> x)
-	{
+
+	public void AddFields(List<Symbol> x) {
 		members.addAll(x);
 	}
-	
-	
-	public ArrayList<Symbol> getMembers()
-	{
+
+	public ArrayList<Symbol> getMembers() {
 		return members;
+	}
+
+	public Symbol findMember(String name) {
+		for (Symbol x : members)
+			if (x.getName().equals(name))
+				return x;
+
+		return null;
 	}
 }

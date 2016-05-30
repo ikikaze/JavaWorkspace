@@ -9,6 +9,7 @@ import java.util.ListIterator;
 import enums.CLS;
 import enums.MEM;
 import enums.TypeBase;
+import symbols.FunSymbol;
 import symbols.StructSymbol;
 import symbols.Symbol;
 import symbols.Type;
@@ -23,8 +24,8 @@ public class Asin {
 	public int index;
 	public ArrayList<Symbol> Symbols;
 	private int depth = 0;
-	private Symbol crtFunc = null;
-	private Symbol crtStruct = null;
+	private FunSymbol crtFunc = null;
+	private StructSymbol crtStruct = null;
 	private List<Symbol> crtArgs = new ArrayList<Symbol>();
 
 	public Asin(String fileName) {
@@ -49,7 +50,7 @@ public class Asin {
 	private Symbol findSymbol(String name) {
 		Collections.reverse(Symbols);
 		for (Symbol s : Symbols)
-			if (s.getName() == name) {
+			if (s.getName().equals(name)) {
 				Collections.reverse(Symbols);
 				return s;
 			}
@@ -332,7 +333,7 @@ public class Asin {
 	private boolean consumeCast() {
 		int startindex = index;
 		if (consume(18)) {
-			if (consumeTName())
+			if (consumeTName()!=null)
 				if (consume(19))
 					if (consumeCast())
 						return true;
@@ -406,12 +407,14 @@ public class Asin {
 	}
 
 	// typeName: typeBase arrayDecl? ;
-	private boolean consumeTName() {
-		if (consumeTBase() != null) {
-			consumeArrayDecl();
-			return true;
+	private Type consumeTName() {
+		Type t;
+		if (( t =consumeTBase()) != null) {
+			int a=consumeArrayDecl();
+			t.setNElem(a);
+			return t;
 		}
-		return false;
+		return null;
 	}
 
 	// arrayDecl: LBRACKET expr? RBRACKET ;
@@ -420,7 +423,7 @@ public class Asin {
 		if (consume(20)) {
 			consumeexpr();
 			if (consume(21))
-				return 1;
+				return 0; // not computing array size atm.
 		}
 		index = startindex;
 		return -20; // TODO add the array implementation
@@ -428,66 +431,120 @@ public class Asin {
 	}
 
 	// typeBase: INT | DOUBLE | CHAR | STRUCT ID ;
-	private TypeBase consumeTBase() {
+	private Type consumeTBase() {
+
 		if (consume(7)) // int
-			return TypeBase.TB_INT;
+			return new Type(TypeBase.TB_INT, 0);
 		if (consume(3)) // double
-			return TypeBase.TB_DOUBLE;
+			return new Type(TypeBase.TB_DOUBLE, 0);
 		if (consume(2)) // char
-			return TypeBase.TB_CHAR;
+			return new Type(TypeBase.TB_CHAR, 0);
 		if (consume(9)) // struct
 			if (consume(0)) // id
-				return TypeBase.TB_STRUCT;
-
+			{
+				int i = index - 1;
+				String name = Tokens.get(i).sequence;
+				if (findSymbol(name) == null)
+					throw new ParserException("struct " + name + " is undefined");
+				if (findSymbol(name).getCls() != CLS.CLS_STRUCT)
+					throw new ParserException("symbol not a struct ->" + name);
+				Type t = new Type(TypeBase.TB_STRUCT, 0);
+				t.addSymbol(findSymbol(name));
+				return t;
+			}
 		return null;
 	}
 
 	// funcArg: typeBase ID arrayDecl? ;
-	private boolean consumeFuncArg() {
+	private Symbol consumeFuncArg() {
 		int startindex = index;
-		if (consumeTBase() != null)
+		String name;
+		Symbol s=new Symbol();
+		Type type;
+		if ((type=consumeTBase() )!= null)
 			if (consume(0)) {
-				consumeArrayDecl();
-				return true;
+				name=Tokens.get(index-1).sequence;
+				int arr=consumeArrayDecl();
+				s.addInfo(MEM.MEM_ARG);
+				s.addInfo(CLS.CLS_VAR);
+				type.setNElem(arr);
+				s.addInfo(type);
+				s.addInfo(name);				
+				return s;
 			}
 		index = startindex;
-		return false;
+		return null;
 
 	}
 
-	private Symbol consumeVar() {
+	private boolean consumeVar() {
 		Symbol symbol = new Symbol();
-		TypeBase base;
-
+		Type base;
+		int arr;
 		String name;
 		int nElem = -1;
 		int startindex = index;
 		if ((base = consumeTBase()) != null) {
 			if (consume(0)) {
 				name = Tokens.get(index - 1).sequence;
-				consumeArrayDecl();
+				arr = consumeArrayDecl();
+				base.setNElem(arr);
+				addVar(name, base);
 				while (true) {
 					if (!consume(16))
 						break;
 					if (!consume(0))
 						break;
-					else {// TODO 2nd variable with comma separator
-					}
+					else {
+						name = Tokens.get(index - 1).sequence;
+						arr = consumeArrayDecl();
 
-					consumeArrayDecl();
+						addVar(name, new Type(base.getType(), arr));
+					}
 				}
 				if (consume(17)) {
 					symbol.addInfo(name);
-					Type type = new Type(base, nElem, null);
-					symbol.addInfo(type);
+
+					symbol.addInfo(base);
 					symbol.addInfo(CLS.CLS_VAR);
-					return symbol;// TODO
+					return true;
 				}
 			}
 		}
 
 		index = startindex;
-		return null;
+		return false;
+	}
+
+	void addVar(String name, Type t) {
+
+		if (crtStruct != null) {
+			if (crtStruct.findMember(name) != null)
+				throw new ParserException("Symbol redefinition ->" + name);
+			Symbol s = crtStruct.AddMember(new Symbol());
+			s.addInfo(CLS.CLS_VAR);
+			s.addInfo(name);
+			s.addInfo(t);
+			s.setDepth(depth);
+		} else if (crtFunc != null) {
+			Symbol s = findSymbol(name);
+			if (s != null && s.getDepth() == depth)
+				throw new ParserException("Symbol redefition ->" + s.getName());
+			s=new Symbol();
+			s.addInfo(name);
+			s.addInfo(t);
+			s.addInfo(MEM.MEM_LOCAL);
+			s.addInfo(CLS.CLS_VAR);
+			s.addInfo(t);
+			s.setDepth(depth);
+			
+
+		} else {
+			if (findSymbol(name) != null)
+				throw new ParserException("Symbol redefinition ->" + name);
+			AddSymbol(new Symbol(name, CLS.CLS_VAR, MEM.MEM_GLOBAL, t, depth));
+		}
+
 	}
 
 	private boolean consumeStruct() {
@@ -497,6 +554,7 @@ public class Asin {
 				if (findSymbol(Tokens.get(startindex + 1).sequence) != null)
 					throw new ParserException("Symbol Redefinition");
 				else {
+
 					String strname = Tokens.get(startindex + 1).sequence;
 					StructSymbol s = new StructSymbol(strname, CLS.CLS_STRUCT, MEM.MEM_GLOBAL, null);
 					ArrayList<Symbol> args = new ArrayList<Symbol>();
@@ -504,29 +562,25 @@ public class Asin {
 					crtStruct = s;
 					if (consume(22)) {
 						while (true) {
-							int varindex = index;
-							Symbol x = consumeVar();
-							if (x == null)
-								break;
-							else {
-								s.AddMember(x);
 
-							}
+							if(!consumeVar()) break;
 
 						}
-						if (consume(23))
-							if (consume(17)) {
-								Type type = new Type(TypeBase.TB_STRUCT, -1, args);
-								s.addInfo(type);
-
-								AddSymbol(s);
-								crtStruct = null;
-								return true;
-							}
 
 					}
+					if (consume(23))
+						if (consume(17)) {
+							Type type = new Type(TypeBase.TB_STRUCT, -1, args);
+							s.addInfo(type);
+
+							AddSymbol(s);
+							crtStruct = null;
+							return true;
+						}
+
 				}
 			}
+
 		index = startindex;
 		crtStruct = null;
 		return false;
@@ -593,17 +647,24 @@ public class Asin {
 
 	private boolean consumeSTMC() {
 		int startindex = index;
+		int crtdepth=depth;
 		if (consume(22)) {
+			depth++;
+			Symbol s=Symbols.get(Symbols.size()-1);
 			while (true) {
-				if (consumeVar() != null) {
+				if (consumeVar()) {
 				} else if (consumeStm()) {
 				} else
 					break;
 			}
 			if (consume(23))
+			{depth--;
+			deleteSymbolsAfter(s.getName(), s.getType().getType(), s.getCls());
 				return true;
+			}
 		}
-
+		if(crtdepth!=depth)
+			depth--;
 		index = startindex;
 		return false;
 	}
@@ -611,32 +672,63 @@ public class Asin {
 	private boolean consumeFunc() {
 		int startindex = index;
 		int ok = 0;
-		if (consumeTBase() != null) {
+		Type t;
+		String name;
+		if ((t=consumeTBase()) != null) {
 			ok = 1;
-			consume(26);
+			if(consume(26))
+				t.setNElem(0);
+			else
+				t.setNElem(-1);
 		}
+		
 		if (ok == 0 && consume(10))
-			ok = 1;
+			{ok = 1;
+			t=new Type();
+			t.setNElem(-1);
+			t.setType(TypeBase.TB_VOID);
+			}
 		if (ok == 1)
-			if (consume(0))
+			if (consume(0)){
+				name=Tokens.get(index-1).sequence;
+				if(findSymbol(name)!=null)
+					throw new ParserException("Symbol redefition -> " + name);
+				crtFunc=new FunSymbol(name, CLS.CLS_FUNC, MEM.MEM_GLOBAL, t, 0);
+				depth+=1;
+				AddSymbol(crtFunc);
 				if (consume(18)) {
 					consumeFFrag();
 					if (consume(19))
+					{ depth-=1;
 						if (consumeSTMC())
+						{	deleteSymbolsAfter(crtFunc.getName(), t.getType(), CLS.CLS_FUNC);
+							//crtFunc=null;
 							return true;
+						}
+					}
 				}
+		}
+		
+		crtFunc=null;
 		index = startindex;
 		return false;
 	}
 
 	private boolean consumeFFrag() {
-		if (consumeFuncArg())
+		Symbol s;
+		if ((s=consumeFuncArg())!=null)
+		{s.setDepth(depth);
+			AddSymbol(s);
+		crtFunc.addArg(new Symbol(s.getName(),s.getCls(),MEM.MEM_ARG,s.getType(),depth));
 			while (true) {
 				if (!consume(16))
 					break;
-				if (!consumeFuncArg())
+				if ((s=consumeFuncArg())==null)
 					break;
+				else
+					AddSymbol(s);
 			}
+		}
 
 		return true;
 	}
@@ -645,7 +737,7 @@ public class Asin {
 		while (true) {
 			if (consumeStruct()) {
 			} else if (consumeFunc()) {
-			} else if (consumeVar() != null) {
+			} else if (consumeVar()) {
 			} else if (consume(100)) {
 				System.out.println("END");
 				return true;

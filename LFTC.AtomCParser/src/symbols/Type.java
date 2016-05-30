@@ -16,12 +16,29 @@ public class Type {
 		this.s = s;
 	}
 
+	public Type(TypeBase type, int nElem) {
+		this.setType(type);
+		this.nElements = nElem;
+		s = new ArrayList<Symbol>();
+	}
+	
+	public Type()
+	{}
+
 	public TypeBase getType() {
 		return type;
 	}
 
 	public void setType(TypeBase type) {
 		this.type = type;
+	}
+
+	public void addSymbol(Symbol s) {
+		this.s.add(s);
+	}
+
+	public void setNElem(int a) {
+		nElements = a;
 	}
 
 	public static Type getArithType(Type a, Type b) {

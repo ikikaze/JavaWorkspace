@@ -1,8 +1,10 @@
 package symbols;
 
+import java.awt.datatransfer.ClipboardOwner;
+
 import enums.*;
 @SuppressWarnings("unused")
-public class Symbol {
+public class Symbol implements Cloneable {
 
 	private String Name;
 	private CLS cls;
@@ -16,7 +18,7 @@ public class Symbol {
 		this.setCls(cls);
 		this.mem = mem;
 		this.setType(type);
-		this.depth = depth;
+		this.setDepth(depth);
 	}
 	public Symbol() {}
 
@@ -60,6 +62,13 @@ public class Symbol {
 	public void addInfo(Type type) {
 		this.type = type;
 	}
+	public int getDepth() {
+		return depth;
+	}
+	public void setDepth(int depth) {
+		this.depth = depth;
+	}
 	
+
 
 }

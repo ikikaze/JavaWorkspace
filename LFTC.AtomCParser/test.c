@@ -1,18 +1,22 @@
 struct x
-{ 
-int i;
-char a;
-double t;
-double x[5];
+{
+int a;
+int b;
 };
 
-struct v
-{ 
-double a;
-};
+int functie(int x)
+{
 
 
-struct t
-{ 
 
-};
+double x;
+
+}
+
+
+
+void main(int x)
+{
+int a;
+int b;
+}
